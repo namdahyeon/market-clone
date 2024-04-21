@@ -7,4 +7,5 @@ main {padding: 30px 20px;}
 .item-list__info-meta {font-style: smaller;color: rgba(0,0,0,0.4);}
 .item-list__info-price {font-weight: bold;}
 
-.write-btn {position: fixed;bottom: 110px;right: 20px;background-color: #fe6f0f;color: #fff;padding: 10px 15px;border-radius: 20px;font-size: 14px;box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;}
+.write-btn {position: fixed;bottom: 110px;right: 20px;background-color: var(--button-primary);color: #fff;padding: 10px 15px;border-radius: 20px;font-size: 14px;box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;cursor: pointer;transition: all .2s ease-in-out;}
+.write-btn:hover {background-color: var(--button-hover);}
