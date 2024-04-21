@@ -1,0 +1,5 @@
+footer {position: fixed;bottom: 0;width: 100vw;padding-bottom: 20px;padding-top: 20px;border-top: 1px solid #eaeaea;background-color: #fff;}
+.footer-block {display: flex;justify-content: space-evenly;align-items: center;}
+.footer-icons {margin: 0 10px;font-size: 10px;display: flex;flex-direction: column;justify-content: center;align-items: center;cursor: pointer;}
+.footer-icons__desc {font-weight: bold;margin-top: 5px;}
+.footer-icons__img {width: 30px;}
