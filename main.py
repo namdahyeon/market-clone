@@ -64,7 +64,7 @@ async def get_image(item_id):
    image_bytes = cur.execute(f"""
                               SELECT image from items WHERE id={item_id}
                              """).fetchone()[0] # [0] :그룹껍떼기? 하나 벗기기 위함
-   return Response(content=bytes.fromhex(image_bytes))
+   return Response(content=bytes.fromhex(image_bytes), media_type='image/*')
    # bytes: 2진법 , .fromhex() :16진법을 바꾼다. , :~~해서 response하겠다.
    
 
