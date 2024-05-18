@@ -68,6 +68,23 @@ async def get_image(item_id):
    # bytes: 2진법 , .fromhex() :16진법을 바꾼다. , :~~해서 response하겠다.
    
 
+
+@app.post('/signup')
+def signup(id:Annotated[str,Form()],
+           password:Annotated[str,Form()],
+           name:Annotated[str,Form()],
+           email:Annotated[str,Form()]):
+   # DB에 저장하기
+   cur.execute(f"""
+               INSERT INTO users(id, name, email, password)
+               VALUES ('{id}','{name}','{email}','{password}')
+               """)
+   con.commit()
+   print(id, password)
+   return '200'
+
+
+
 # 꼭 가장 아래에 작성하기
 app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
 
