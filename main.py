@@ -1,7 +1,9 @@
-from fastapi import FastAPI,UploadFile,Form,Response
+from fastapi import FastAPI,UploadFile,Form,Response,Depends
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from fastapi.staticfiles import StaticFiles
+from fastapi_login import LoginManager
+from fastapi_login.exceptions import InvalidCredentialsException
 from typing import Annotated
 import sqlite3
 
@@ -22,8 +24,61 @@ cur.execute(f"""
             );
             """)
 
-
 app = FastAPI()
+
+SERCRET = 'super-coding'
+manager = LoginManager(SERCRET,'/login')
+
+@manager.user_loader()
+def query_user(data):
+   WHERE_STATEMENTS = f'id="{data}"'
+   if type(data) == dict:
+      WHERE_STATEMENTS = f'''id="{data['id']}"'''
+   con.row_factory = sqlite3.Row
+   cur = con.cursor()
+   user = cur.execute(f"""
+                     SELECT * from users WHERE {WHERE_STATEMENTS}
+                     """).fetchone()
+   return user
+
+@app.post('/login')
+def login(id:Annotated[str,Form()],
+           password:Annotated[str,Form()]):
+   user = query_user(id)
+   # print(user['password'])
+   if not user:
+      raise InvalidCredentialsException    # raise   : 에러메세지를 보낼 수 있다.
+   # InvalidCredentialsException   : 401을 자동으로 생성해서 내려준다.
+   elif password != user['password']:     # elif  : js의 else if 와 같다
+      raise InvalidCredentialsException
+
+   access_token = manager.create_access_token(data={
+      'sub': {
+         'id': user['id'],
+         'name': user['name'],
+         'email': user['email']
+      }
+   })
+
+   return {'access_token': access_token}
+   # return 값에 '200'을 작성하지 않아도 자동으로 200 상태 코드를 내려줌
+
+
+@app.post('/signup')
+def signup(id:Annotated[str,Form()],
+           password:Annotated[str,Form()],
+           name:Annotated[str,Form()],
+           email:Annotated[str,Form()]):
+   # DB에 저장하기
+   cur.execute(f"""
+               INSERT INTO users(id, name, email, password)
+               VALUES ('{id}','{name}','{email}','{password}')
+               """)
+   con.commit()
+   print(id, password)
+   return '200'
+
+
 
 @app.post('/items')
 async def create_item(image:UploadFile,
@@ -31,7 +86,8 @@ async def create_item(image:UploadFile,
                 price:Annotated[int,Form()],
                 description:Annotated[str,Form()],
                 place:Annotated[str,Form()],
-                insertAt:Annotated[int,Form()]
+                insertAt:Annotated[int,Form()]#,
+               #  user=Depends(manager)
                 ):
 #   print(image,title,price,description,place,insertAt)
 
@@ -45,9 +101,10 @@ async def create_item(image:UploadFile,
                """)
    # .hex()   : 16진법으로 바꿔 줌
    con.commit()
+   return '200'
 
 @app.get('/items')
-async def get_items():
+async def get_items(user=Depends(manager)):
    # 컬렴명도 같이 가져옴
    con.row_factory = sqlite3.Row
    cur = con.cursor()
@@ -69,21 +126,6 @@ async def get_image(item_id):
    
 
 
-@app.post('/signup')
-def signup(id:Annotated[str,Form()],
-           password:Annotated[str,Form()],
-           name:Annotated[str,Form()],
-           email:Annotated[str,Form()]):
-   # DB에 저장하기
-   cur.execute(f"""
-               INSERT INTO users(id, name, email, password)
-               VALUES ('{id}','{name}','{email}','{password}')
-               """)
-   con.commit()
-   print(id, password)
-   return '200'
-
-
 
 # 꼭 가장 아래에 작성하기
 app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
@@ -93,3 +135,5 @@ app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
 
 # pip install python-multipart
 # 서버주소/docs   :api 상세내용 확인 가능
+
+# pip install fastapi-login    :login 라이브러리 설치
