@@ -1,15 +1,38 @@
-<form id="login-form" action="/signup" method="POST">
+<script>
+   import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+   import { user$ } from "../store";
+
+   const provider = new GoogleAuthProvider();
+   const auth = getAuth();
+
+   const loginWithGoogle = async () => {
+      try {
+         const result = await signInWithPopup(auth, provider)
+         const credential = GoogleAuthProvider.credentialFromResult(result);
+         const token = credential.accessToken;
+         const user = result.user;
+         user$.set(user);
+         localStorage.setItem('token', token);
+      } catch(error){
+         console.error(error);
+      }
+   }
+
+</script>
+
+<div>
    <div>로그인하기</div>
-   <div>
-      <label for="id">아이디</label>
-      <input type="text" id="id" name="id" required />
-   </div>
-   <div>
-      <label for="password">패스워드</label>
-      <input type="password" id="password" name="password" required />
-   </div>
-   <div>
-      <button type="submit">로그인</button>
-   </div>
-   <div id="info"></div>
-</form>
+   <button class="login-btn" on:click={loginWithGoogle}>
+      <img
+      class="google-img"
+      src="https://png.pngtree.com/png-vector/20230817/ourmid/pngtree-google-internet-icon-vector-png-image_9183287.png"
+      alt="" />
+      <div>Google로 로그인하기</div>
+      <div />
+   </button>
+</div>
+
+<style>
+   .login-btn {width: 200px;height:50px;border: 1px solid gray;display: flex;justify-content: space-between;align-items: center;border-radius: 3px;}
+   .google-img {width: 20px;}
+</style>
